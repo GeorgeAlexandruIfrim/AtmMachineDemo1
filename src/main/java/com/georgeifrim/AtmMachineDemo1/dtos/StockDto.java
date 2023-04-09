@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.georgeifrim.AtmMachineDemo1.repositories.Denominations;
 
 import java.util.Map;
-public class AmountDto {
+public class StockDto {
 
     int oneHundredDollars;
     int fiftyDollars;
@@ -13,7 +13,7 @@ public class AmountDto {
     int oneDollars;
     int total;
 
-    public AmountDto(Map<Denominations, Integer> map){
+    public StockDto(Map<Denominations, Integer> map){
         this.oneHundredDollars = map.get(Denominations.ONE_HUNDRED);
         this.fiftyDollars = map.get(Denominations.FIFTY);
         this.tenDollars = map.get(Denominations.TEN);

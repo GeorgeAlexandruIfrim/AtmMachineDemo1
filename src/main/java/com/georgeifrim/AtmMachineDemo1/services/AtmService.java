@@ -1,6 +1,8 @@
 package com.georgeifrim.AtmMachineDemo1.services;
 
-import com.georgeifrim.AtmMachineDemo1.dtos.AmountDto;
+import com.georgeifrim.AtmMachineDemo1.dtos.AmountFedDto;
+import com.georgeifrim.AtmMachineDemo1.dtos.AmountWithdrawnDto;
+import com.georgeifrim.AtmMachineDemo1.dtos.StockDto;
 import com.georgeifrim.AtmMachineDemo1.exceptions.IllegalAmount;
 import com.georgeifrim.AtmMachineDemo1.exceptions.NotEnoughMoney;
 import com.georgeifrim.AtmMachineDemo1.repositories.AtmRepository;
@@ -9,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.TreeMap;
+
+import static com.georgeifrim.AtmMachineDemo1.repositories.CriticalDenominationLevelLogger.lowDenominationLevelAlert;
+
 @Service
 public class AtmService {
     private final AtmRepository atmRepository;
@@ -17,20 +23,59 @@ public class AtmService {
         this.atmRepository = atmRepository;
     }
 
-    public Map<Denominations, Integer> withdrawAmount(int amount){
+    public AmountWithdrawnDto withdrawAmount(int amount){
         if(amount<=0){
             throw new IllegalAmount();
         } else if(amount <= atmRepository.currentStockValue()){
-            return atmRepository.withdrawAmount(amount);
+            var initialStock = Map.copyOf(atmRepository.getAtmStock());
+            var affectedStock =  withdrawAmountFromStock(amount);
+            Map<Denominations, Integer> withdrawedMap = new TreeMap<>();
+
+            for (Map.Entry<Denominations, Integer> mapEntry : initialStock.entrySet()){
+                withdrawedMap.put(mapEntry.getKey(), initialStock.get(mapEntry.getKey()) - affectedStock.get(mapEntry.getKey()));
+            }
+            return new AmountWithdrawnDto(withdrawedMap);
         }else{
             throw new NotEnoughMoney();
         }
     }
-    public AmountDto getStock(){
-        return new AmountDto(atmRepository.currentStock());
+    public Map<Denominations, Integer> withdrawAmountFromStock(int amount){
+
+        for (Map.Entry<Denominations, Integer> stockentry : atmRepository.getCurrentStockSet()) {
+
+            int noBanknotes = amount / stockentry.getKey().getDenominationValue();
+
+            if (noBanknotes <= stockentry.getValue()) {
+                atmRepository.getAtmStock().replace(stockentry.getKey(), stockentry.getValue() - noBanknotes);
+                amount = amount - noBanknotes * stockentry.getKey().getDenominationValue();
+            } else {
+                amount = amount - stockentry.getValue() * stockentry.getKey().getDenominationValue();
+                atmRepository.getAtmStock().replace(stockentry.getKey(), 0);
+            }
+        }
+        lowDenominationLevelAlert(atmRepository.getAtmStock());
+        return atmRepository.getAtmStock();
     }
 
-    public AmountDto feedMoney(int amount) {
-        return new AmountDto(atmRepository.feedMoney(amount));
+    public StockDto getStock(){
+        return new StockDto(atmRepository.getAtmStock());
+    }
+
+    public AmountFedDto feedMoney(int amount) {
+        Map<Denominations, Integer> map = splitIntoDenominations(amount);
+        map.forEach((k,v) -> atmRepository.getAtmStock().merge(k,v,Integer::sum));
+        return new AmountFedDto(map);
+    }
+    public Map<Denominations, Integer> splitIntoDenominations(int amount){
+
+        Map<Denominations, Integer> map = new TreeMap<>();
+        Denominations[] list = Denominations.values();
+
+        for(Denominations den : list){
+            int banknotes = amount/den.getDenominationValue();
+            amount = amount % den.getDenominationValue();
+            map.put(den, banknotes);
+        }
+        return map;
     }
 }
