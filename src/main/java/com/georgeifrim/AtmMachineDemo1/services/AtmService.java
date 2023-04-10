@@ -7,6 +7,7 @@ import com.georgeifrim.AtmMachineDemo1.exceptions.IllegalAmount;
 import com.georgeifrim.AtmMachineDemo1.exceptions.NotEnoughMoney;
 import com.georgeifrim.AtmMachineDemo1.repositories.AtmRepository;
 import com.georgeifrim.AtmMachineDemo1.repositories.Denominations;
+import com.georgeifrim.AtmMachineDemo1.repositories.LargeAmountWithdrawnAllert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.georgeifrim.AtmMachineDemo1.repositories.CriticalDenominationLevelLogger.lowDenominationLevelAlert;
+import static com.georgeifrim.AtmMachineDemo1.repositories.LargeAmountWithdrawnAllert.largeAmountWithdrawn;
 
 @Service
 public class AtmService {
@@ -40,6 +42,8 @@ public class AtmService {
         }
     }
     public Map<Denominations, Integer> withdrawAmountFromStock(int amount){
+
+        largeAmountWithdrawn(amount);
 
         for (Map.Entry<Denominations, Integer> stockentry : atmRepository.getCurrentStockSet()) {
 

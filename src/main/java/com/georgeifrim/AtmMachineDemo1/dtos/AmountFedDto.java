@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.georgeifrim.AtmMachineDemo1.repositories.Denominations;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class AmountFedDto {
 
@@ -62,4 +63,16 @@ public class AmountFedDto {
         this.oneDollars = oneDollars;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AmountFedDto that = (AmountFedDto) o;
+        return getOneHundredDollars() == that.getOneHundredDollars() && getFiftyDollars() == that.getFiftyDollars() && getTenDollars() == that.getTenDollars() && getFiveDollars() == that.getFiveDollars() && getOneDollars() == that.getOneDollars();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOneHundredDollars(), getFiftyDollars(), getTenDollars(), getFiveDollars(), getOneDollars());
+    }
 }
