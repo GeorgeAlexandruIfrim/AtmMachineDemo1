@@ -1,6 +1,5 @@
 package com.georgeifrim.AtmMachineDemo1.unit;
 
-import com.georgeifrim.AtmMachineDemo1.dtos.AmountFedDto;
 import com.georgeifrim.AtmMachineDemo1.dtos.AmountWithdrawnDto;
 import com.georgeifrim.AtmMachineDemo1.exceptions.NotEnoughMoney;
 import com.georgeifrim.AtmMachineDemo1.repositories.AtmRepository;
@@ -12,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
